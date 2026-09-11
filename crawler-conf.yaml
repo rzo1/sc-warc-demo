@@ -71,6 +71,12 @@ config:
 
   http.store.headers: true
 
+  # Follow HTTP redirects, e.g. seeds redirecting from the bare domain to www or from http to https
+  http.allow.redirects: true
+  # Follow robots.txt redirects to a different host, e.g. example.org/robots.txt -> www.example.org/robots.txt.
+  # Otherwise such hosts (including the default seed) are not crawled at all.
+  http.robots.redirect.crossorigin.allow: true
+
   http.protocol.implementation: "org.apache.stormcrawler.protocol.okhttp.HttpProtocol"
   https.protocol.implementation: "org.apache.stormcrawler.protocol.okhttp.HttpProtocol"
 
