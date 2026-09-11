@@ -4,9 +4,14 @@ A web crawler built on [Apache StormCrawler](https://stormcrawler.apache.org/) t
 
 This project was generated using the StormCrawler Maven Archetype and serves as a starting point for building your own crawler. Review the provided code and resources and adapt them as needed for your use case.
 
+> **Note:** This branch targets **Apache Storm 3.1.0** and **Apache StormCrawler 4.0.0-SNAPSHOT**. Until both are
+> released, `pom.xml` resolves them from the ASF snapshot and Storm staging repositories, and the `storm:3.1.0`
+> Docker image has to be built locally from the Storm binary distribution. Drop the `<repositories>` block from
+> `pom.xml` and switch to the released StormCrawler version once both are available.
+
 ## Prerequisites
 
-- **Java 17**
+- **Java 17** (to build; the Storm 3.1.0 Docker images run on Java 25)
 - **Maven** 3.x
 - **Docker** and **Docker Compose**
 
@@ -59,7 +64,7 @@ docker run --network stormcrawler-warc_default -it \
   -v "$(pwd)/crawler-conf.yaml:/apache-storm/crawler-conf.yaml" \
   -v "$(pwd)/crawler.flux:/apache-storm/crawler.flux" \
   -v "$(pwd)/target/stormcrawler-warc-1.0-SNAPSHOT.jar:/apache-storm/stormcrawler-warc-1.0-SNAPSHOT.jar" \
-  storm:latest \
+  storm:3.1.0 \
   storm jar stormcrawler-warc-1.0-SNAPSHOT.jar org.apache.storm.flux.Flux --remote crawler.flux
 ```
 
@@ -72,7 +77,7 @@ docker run --network stormcrawler-warc_default -it \
 
 ## Topology Overview
 
-The crawl pipeline is defined declaratively in `crawler.flux` using [Storm Flux](https://storm.apache.org/releases/2.8.0/flux.html). There is no custom Java code; the topology is composed entirely of StormCrawler components:
+The crawl pipeline is defined declaratively in `crawler.flux` using [Storm Flux](https://storm.apache.org/releases/current/flux.html). There is no custom Java code; the topology is composed entirely of StormCrawler components:
 
 ```
 URLFrontier Spout
@@ -144,8 +149,8 @@ Before using this crawler in any non-demo context, update the `http.agent.*` fie
 
 | Dependency     | Version | Purpose                          |
 |----------------|---------|----------------------------------|
-| StormCrawler   | 3.5.1   | Core crawling framework (core, tika, urlfrontier, warc modules) |
-| Apache Storm   | 2.8.5   | Distributed stream processing (`provided` scope — supplied by Docker) |
+| StormCrawler   | 4.0.0-SNAPSHOT | Core crawling framework (core, tika, urlfrontier, warc modules) |
+| Apache Storm   | 3.1.0   | Distributed stream processing (`provided` scope — supplied by Docker) |
 | URLFrontier    | 2.4     | URL queue management             |
 
 ## License

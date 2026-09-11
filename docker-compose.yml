@@ -5,7 +5,7 @@ services:
     restart: always
 
   nimbus:
-    image: storm:2.8.2
+    image: storm:3.1.0
     container_name: nimbus
     hostname: nimbus
     command: storm nimbus
@@ -14,7 +14,7 @@ services:
     restart: always
 
   supervisor:
-    image: storm:2.8.2
+    image: storm:3.1.0
     container_name: supervisor
     command: storm supervisor -c worker.childopts=-Xmx%HEAP-MEM%m
     volumes:
@@ -25,7 +25,7 @@ services:
     restart: always
 
   ui:
-    image: storm:2.8.2
+    image: storm:3.1.0
     container_name: ui
     command: storm ui
     depends_on:

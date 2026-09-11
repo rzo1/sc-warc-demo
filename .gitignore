@@ -1,0 +1,3 @@
+target/
+data/*.warc.gz
+data/.*.warc.gz.crc
