@@ -1,3 +1,4 @@
 target/
 data/*.warc.gz
 data/.*.warc.gz.crc
+tranco-GQ32K.csv

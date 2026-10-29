@@ -94,6 +94,10 @@ bolts:
     className: "org.apache.stormcrawler.warc.WARCHdfsBolt"
     parallelism: 1
     configMethods:
+      # use the "warc" config map above (RawLocalFileSystem)
+      - name: "withConfigKey"
+        args:
+          - "warc"
       - name: "withFileNameFormat"
         args:
           - ref: "WARCFileNameFormat"

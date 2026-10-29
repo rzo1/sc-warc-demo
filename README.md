@@ -4,14 +4,19 @@ A web crawler built on [Apache StormCrawler](https://stormcrawler.apache.org/) t
 
 This project was generated using the StormCrawler Maven Archetype and serves as a starting point for building your own crawler. Review the provided code and resources and adapt them as needed for your use case.
 
-> **Note:** This branch targets **Apache Storm 3.1.0** and **Apache StormCrawler 4.0.0-SNAPSHOT**. Until both are
-> released, `pom.xml` resolves them from the ASF snapshot and Storm staging repositories, and the `storm:3.1.0`
-> Docker image has to be built locally from the Storm binary distribution. Drop the `<repositories>` block from
-> `pom.xml` and switch to the released StormCrawler version once both are available.
+> **Note:** This branch tests **Apache StormCrawler 4.0.0-SNAPSHOT** (the `main` branch) on **Apache Storm 3.1.0**,
+> see the [call for testing](https://github.com/apache/stormcrawler/discussions/2268). StormCrawler has to be built
+> from source first, so that the exact commit tested is known:
+>
+> ```sh
+> git clone https://github.com/apache/stormcrawler && cd stormcrawler
+> mvn install -DskipTests
+> git rev-parse --short HEAD   # the commit to report
+> ```
 
 ## Prerequisites
 
-- **Java 17** (to build; the Storm 3.1.0 Docker images run on Java 25)
+- **Java 25** (StormCrawler 4.0 requires it; the `storm:3.1.0` Docker images run on Java 25)
 - **Maven** 3.x
 - **Docker** and **Docker Compose**
 
@@ -41,7 +46,7 @@ This brings up five services:
 | **UI**         | Storm web dashboard          | http://localhost:8080    |
 | **URLFrontier**| URL queue / frontier service | localhost:7071 (gRPC)   |
 
-> **Note:** This setup uses an **in-memory URLFrontier**. All queued URLs and crawl state will be lost when the Docker containers are stopped or restarted. For persistent storage, consult the [Apache StormCrawler documentation](https://stormcrawler.apache.org/).
+> **Note:** URLFrontier stores its state with RocksDB inside the container. It survives `docker compose restart`, but is lost when the container is recreated, e.g. by `docker compose down` or `docker compose up -d --force-recreate urlfrontier` (which is how to start a fresh crawl). For persistent storage, consult the [Apache StormCrawler documentation](https://stormcrawler.apache.org/).
 
 ### 3. Inject seed URLs
 
@@ -52,14 +57,18 @@ java -cp target/stormcrawler-warc-1.0-SNAPSHOT.jar \
   crawlercommons.urlfrontier.client.Client PutURLs -f seeds.txt
 ```
 
-Edit `seeds.txt` to list the URLs you want to crawl (one per line).
+Edit `seeds.txt` to list the URLs you want to crawl (one per line). To make results comparable with other test crawls, generate it from the first N hosts of the Tranco list [GQ32K](https://tranco-list.eu/list/GQ32K/1000000) instead:
+
+```sh
+./make-seeds.sh 1000
+```
 
 ### 4. Submit the crawl topology
 
 Submit the Flux topology to the running Storm cluster:
 
 ```sh
-docker run --network stormcrawler-warc_default -it \
+docker run --network sc-warc-demo_default -it \
   --rm \
   -v "$(pwd)/crawler-conf.yaml:/apache-storm/crawler-conf.yaml" \
   -v "$(pwd)/crawler.flux:/apache-storm/crawler.flux" \
@@ -110,6 +119,7 @@ Status updates flow from the fetcher and each parser bolt back to the URLFrontie
 | `crawler.flux`                 | Storm Flux topology definition (DAG, WARC output config, rotation policy) |
 | `crawler-conf.yaml`            | StormCrawler configuration (fetch threads, HTTP agent, content limits, Tika) |
 | `seeds.txt`                    | Seed URLs for crawling (one per line)                                   |
+| `make-seeds.sh`                | Writes the first N hosts of the Tranco list GQ32K to `seeds.txt`        |
 | `docker-compose.yml`           | Docker services: Zookeeper, Nimbus, Supervisor, UI, URLFrontier         |
 | `src/main/resources/`          | Filter and normalizer configurations                                    |
 | `├── urlfilters.json`          | URL filtering chain (depth, host/domain scope, regex)                   |
@@ -151,7 +161,7 @@ Before using this crawler in any non-demo context, update the `http.agent.*` fie
 |----------------|---------|----------------------------------|
 | StormCrawler   | 4.0.0-SNAPSHOT | Core crawling framework (core, tika, urlfrontier, warc modules) |
 | Apache Storm   | 3.1.0   | Distributed stream processing (`provided` scope — supplied by Docker) |
-| URLFrontier    | 2.4     | URL queue management             |
+| URLFrontier    | 2.6     | URL queue management             |
 
 ## License
 

@@ -35,7 +35,7 @@ services:
       - "127.0.0.1:8080:8080"
 
   urlfrontier:
-    image: crawlercommons/url-frontier:latest
+    image: crawlercommons/url-frontier:2.6
     container_name: urlfrontier
     restart: always
     ports:
