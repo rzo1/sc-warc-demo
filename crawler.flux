@@ -36,7 +36,7 @@ components:
       - name: "put"
         args:
          - "software"
-         - "StormCrawler 4.0.0-SNAPSHOT"
+         - "StormCrawler 4.0.0"
       - name: "put"
         args:
          - "description"
@@ -143,6 +143,14 @@ streams:
     to: "warc"
     grouping:
       type: LOCAL_OR_SHUFFLE
+
+  # the spout sends URLs whose scheme is not in "protocols" to the status updater
+  - from: "spout"
+    to: "status"
+    grouping:
+      type: FIELDS
+      args: ["url"]
+      streamId: "status"
 
   - from: "fetcher"
     to: "status"

@@ -4,19 +4,9 @@ A web crawler built on [Apache StormCrawler](https://stormcrawler.apache.org/) t
 
 This project was generated using the StormCrawler Maven Archetype and serves as a starting point for building your own crawler. Review the provided code and resources and adapt them as needed for your use case.
 
-> **Note:** This branch tests **Apache StormCrawler 4.0.0-SNAPSHOT** (the `main` branch) on **Apache Storm 3.1.0**,
-> see the [call for testing](https://github.com/apache/stormcrawler/discussions/2268). StormCrawler has to be built
-> from source first, so that the exact commit tested is known:
->
-> ```sh
-> git clone https://github.com/apache/stormcrawler && cd stormcrawler
-> mvn install -DskipTests
-> git rev-parse --short HEAD   # the commit to report
-> ```
-
 ## Prerequisites
 
-- **Java 25** (StormCrawler 4.0 requires it; the `storm:3.1.0` Docker images run on Java 25)
+- **Java 25** (StormCrawler 4.0 requires it; the `storm:3.2.0` Docker images run on Java 25)
 - **Maven** 3.x
 - **Docker** and **Docker Compose**
 
@@ -73,7 +63,7 @@ docker run --network sc-warc-demo_default -it \
   -v "$(pwd)/crawler-conf.yaml:/apache-storm/crawler-conf.yaml" \
   -v "$(pwd)/crawler.flux:/apache-storm/crawler.flux" \
   -v "$(pwd)/target/stormcrawler-warc-1.0-SNAPSHOT.jar:/apache-storm/stormcrawler-warc-1.0-SNAPSHOT.jar" \
-  storm:3.1.0 \
+  storm:3.2.0 \
   storm jar stormcrawler-warc-1.0-SNAPSHOT.jar org.apache.storm.flux.Flux --remote crawler.flux
 ```
 
@@ -159,8 +149,8 @@ Before using this crawler in any non-demo context, update the `http.agent.*` fie
 
 | Dependency     | Version | Purpose                          |
 |----------------|---------|----------------------------------|
-| StormCrawler   | 4.0.0-SNAPSHOT | Core crawling framework (core, tika, urlfrontier, warc modules) |
-| Apache Storm   | 3.1.0   | Distributed stream processing (`provided` scope — supplied by Docker) |
+| StormCrawler   | 4.0.0   | Core crawling framework (core, tika, urlfrontier, warc modules) |
+| Apache Storm   | 3.2.0   | Distributed stream processing (`provided` scope — supplied by Docker) |
 | URLFrontier    | 2.6     | URL queue management             |
 
 ## License
