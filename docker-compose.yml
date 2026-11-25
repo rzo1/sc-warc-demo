@@ -16,23 +16,42 @@ services:
   supervisor:
     image: storm:3.2.0
     container_name: supervisor
-    command: storm supervisor -c worker.childopts=-Xmx%HEAP-MEM%m
+    # The UI links worker logs to http://<supervisor host>:<logviewer port>, so the supervisor
+    # registers as "localhost" to make those links work from the browser on the host
+    command: storm supervisor -c worker.childopts=-Xmx%HEAP-MEM%m -c storm.local.hostname=localhost
     volumes:
       - ./data:/data/warc
+      - storm-logs:/logs
+    ports:
+      # logviewer, which shares the network of the supervisor
+      - "127.0.0.1:${LOGVIEWER_PORT:-8000}:${LOGVIEWER_PORT:-8000}"
     depends_on:
       - nimbus
       - zookeeper
     restart: always
 
+  logviewer:
+    image: storm:3.2.0
+    container_name: logviewer
+    command: storm logviewer -c logviewer.port=${LOGVIEWER_PORT:-8000}
+    # Serves the worker logs written by the supervisor
+    network_mode: "service:supervisor"
+    volumes:
+      - storm-logs:/logs
+    depends_on:
+      - supervisor
+    restart: always
+
   ui:
     image: storm:3.2.0
     container_name: ui
-    command: storm ui
+    # builds the worker log links with this port
+    command: storm ui -c logviewer.port=${LOGVIEWER_PORT:-8000}
     depends_on:
       - nimbus
     restart: always
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${UI_PORT:-8080}:8080"
 
   urlfrontier:
     image: crawlercommons/url-frontier:2.6
@@ -40,3 +59,6 @@ services:
     restart: always
     ports:
       - "127.0.0.1:7071:7071"
+
+volumes:
+  storm-logs:

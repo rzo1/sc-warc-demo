@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Custom configuration for StormCrawler
+# Custom configuration for Apache StormCrawler
 # This is used to override the default values from crawler-default.xml and provide additional ones 
 # for your custom components.
 # Use this file with the parameter -conf when launching your extension of ConfigurableTopology.

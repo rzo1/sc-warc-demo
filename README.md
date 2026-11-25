@@ -1,12 +1,12 @@
-# StormCrawler WARC Demo
+# Apache StormCrawler WARC Demo
 
 A web crawler built on [Apache StormCrawler](https://stormcrawler.apache.org/) that produces [WARC (Web ARChive)](https://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.1/) files. It runs on a Dockerized [Apache Storm](https://storm.apache.org/) cluster with [URLFrontier](https://github.com/crawler-commons/url-frontier) for URL management.
 
-This project was generated using the StormCrawler Maven Archetype and serves as a starting point for building your own crawler. Review the provided code and resources and adapt them as needed for your use case.
+This project was generated using the Apache StormCrawler Maven Archetype and serves as a starting point for building your own crawler. Review the provided code and resources and adapt them as needed for your use case.
 
 ## Prerequisites
 
-- **Java 25** (StormCrawler 4.0 requires it; the `storm:3.2.0` Docker images run on Java 25)
+- **Java 25** (Apache StormCrawler 4.0 requires it; the `storm:3.2.0` Docker images run on Java 25)
 - **Maven** 3.x
 - **Docker** and **Docker Compose**
 
@@ -26,7 +26,9 @@ mvn clean package
 docker compose up -d
 ```
 
-This brings up five services:
+If port 8080 (UI) or 8000 (logviewer) is already in use, choose others, e.g. `UI_PORT=8081 LOGVIEWER_PORT=8001 docker compose up -d`.
+
+This brings up six services:
 
 | Service        | Description                  | Accessible at           |
 |----------------|------------------------------|-------------------------|
@@ -34,6 +36,7 @@ This brings up five services:
 | **Nimbus**     | Storm master node            | internal only           |
 | **Supervisor** | Storm worker node            | internal only           |
 | **UI**         | Storm web dashboard          | http://localhost:8080    |
+| **Logviewer**  | Worker logs, linked from the UI | http://localhost:8000 |
 | **URLFrontier**| URL queue / frontier service | localhost:7071 (gRPC)   |
 
 > **Note:** URLFrontier stores its state with RocksDB inside the container. It survives `docker compose restart`, but is lost when the container is recreated, e.g. by `docker compose down` or `docker compose up -d --force-recreate urlfrontier` (which is how to start a fresh crawl). For persistent storage, consult the [Apache StormCrawler documentation](https://stormcrawler.apache.org/).
@@ -72,11 +75,12 @@ docker run --network sc-warc-demo_default -it \
 ### 5. Monitor and collect results
 
 - Monitor the crawl via the **Storm UI** at [http://localhost:8080](http://localhost:8080), where you can inspect the topology, check throughput, and rebalance workers.
+- Worker logs are linked from the topology and component pages of the Storm UI (port column of the executors) and served by the **logviewer** at [http://localhost:8000](http://localhost:8000).
 - WARC files are written to the `./data/` directory on the host (mounted from the Storm supervisor container).
 
 ## Topology Overview
 
-The crawl pipeline is defined declaratively in `crawler.flux` using [Storm Flux](https://storm.apache.org/releases/current/flux.html). There is no custom Java code; the topology is composed entirely of StormCrawler components:
+The crawl pipeline is defined declaratively in `crawler.flux` using [Storm Flux](https://storm.apache.org/releases/current/flux.html). There is no custom Java code; the topology is composed entirely of Apache StormCrawler components:
 
 ```
 URLFrontier Spout
@@ -107,7 +111,7 @@ Status updates flow from the fetcher and each parser bolt back to the URLFrontie
 | File / Directory               | Purpose                                                                 |
 |--------------------------------|-------------------------------------------------------------------------|
 | `crawler.flux`                 | Storm Flux topology definition (DAG, WARC output config, rotation policy) |
-| `crawler-conf.yaml`            | StormCrawler configuration (fetch threads, HTTP agent, content limits, Tika) |
+| `crawler-conf.yaml`            | Apache StormCrawler configuration (fetch threads, HTTP agent, content limits, Tika) |
 | `seeds.txt`                    | Seed URLs for crawling (one per line)                                   |
 | `make-seeds.sh`                | Writes the first N hosts of the Tranco list GQ32K to `seeds.txt`        |
 | `docker-compose.yml`           | Docker services: Zookeeper, Nimbus, Supervisor, UI, URLFrontier         |
@@ -149,10 +153,10 @@ Before using this crawler in any non-demo context, update the `http.agent.*` fie
 
 | Dependency     | Version | Purpose                          |
 |----------------|---------|----------------------------------|
-| StormCrawler   | 4.0.0   | Core crawling framework (core, tika, urlfrontier, warc modules) |
+| Apache StormCrawler | 4.0.0 | Core crawling framework (core, tika, urlfrontier, warc modules) |
 | Apache Storm   | 3.2.0   | Distributed stream processing (`provided` scope — supplied by Docker) |
 | URLFrontier    | 2.6     | URL queue management             |
 
 ## License
 
-This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+This project is licensed under the [Apache License 2.0](LICENSE).
